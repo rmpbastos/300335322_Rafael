@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Seat Reservation System</title>
+    <link rel="stylesheet" href="/webjars/bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+        .pre-scrollable {
+            height: 400px;
+            overflow-y: scroll;
+        }
+        h1 {
+            text-align: center;
+            color: yellow;
+        }
+        .bg-custom {
+            background-color: cadetblue;
+        }
+        .bg-custom2 {
+            background-color: grey;
+        }
+        label {
+            color: white;
+        }
+        td {
+            color: darkblue;
+        }
+        .form-center {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .form-center input {
+            width: 50%;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content" class="bg-custom">
+    <div class="container mt-2 bg-custom">
+        <h1>Seat Reservation System</h1>
+
+        <!-- Display error message -->
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div class="card-body">
+            <table class="table text-center">
+                <thead>
+                <tr class="text-white">
+                    <th>A</th><th>B</th><th>C</th><th>D</th><th>E</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td th:text="${seatMap['1A'] ?: '1A'}">1A</td>
+                    <td th:text="${seatMap['1B'] ?: '1B'}">1B</td>
+                    <td th:text="${seatMap['1C'] ?: '1C'}">1C</td>
+                    <td th:text="${seatMap['1D'] ?: '1D'}">1D</td>
+                    <td th:text="${seatMap['1E'] ?: '1E'}">1E</td>
+                </tr>
+                <tr>
+                    <td th:text="${seatMap['2A'] ?: '2A'}">2A</td>
+                    <td th:text="${seatMap['2B'] ?: '2B'}">2B</td>
+                    <td th:text="${seatMap['2C'] ?: '2C'}">2C</td>
+                    <td th:text="${seatMap['2D'] ?: '2D'}">2D</td>
+                    <td th:text="${seatMap['2E'] ?: '2E'}">2E</td>
+                </tr>
+                <tr>
+                    <td th:text="${seatMap['3A'] ?: '3A'}">3A</td>
+                    <td th:text="${seatMap['3B'] ?: '3B'}">3B</td>
+                    <td th:text="${seatMap['3C'] ?: '3C'}">3C</td>
+                    <td th:text="${seatMap['3D'] ?: '3D'}">3D</td>
+                    <td th:text="${seatMap['3E'] ?: '3E'}">3E</td>
+                </tr>
+                <tr>
+                    <td th:text="${seatMap['4A'] ?: '4A'}">4A</td>
+                    <td th:text="${seatMap['4B'] ?: '4B'}">4B</td>
+                    <td th:text="${seatMap['4C'] ?: '4C'}">4C</td>
+                    <td th:text="${seatMap['4D'] ?: '4D'}">4D</td>
+                    <td th:text="${seatMap['4E'] ?: '4E'}">4E</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="container mt-2">
+        <div class="card-body bg-custom">
+            <h1 th:text="'There are ' + ${remainingSeats} + ' remaining seats'">There are 20 remaining seats</h1>
+            <form id="reservationForm" method="post" th:action="@{/save}" th:object="${sale}">
+                <div class="row form-row">
+                    <div class="col mt-2">
+                        <label>Seat Code:</label>
+                        <input class="form-control" type="text" id="seatNumber" th:field="*{seatNumber}">
+                    </div>
+                    <div class="col mt-2">
+                        <label>Customer Name:</label>
+                        <input class="form-control" type="text" id="customerName" th:field="*{customerName}">
+                    </div>
+                </div>
+                <div class="form-center">
+                    <div class="col-6 mt-2">
+                        <label>Transaction Date:</label>
+                        <input class="form-control" type="date" id="transactionDate" th:field="*{transactionDate}">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary mt-2">Reserve</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container mt-2 pre-scrollable bg-custom2">
+        <div class="card-body">
+            <table class="table text-center">
+                <thead>
+                <tr>
+                    <th>Transaction Code</th><th>Date</th><th>Seat Number</th><th>Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="customer : ${customers}">
+                    <td th:text="${customer.id}"></td>
+                    <td th:text="${customer.transactionDate}"></td>
+                    <td th:text="${customer.seatNumber}"></td>
+                    <td th:text="${customer.customerName}"></td>
+
+                    <td>
+                        <form th:action="@{/delete/{id}(id=${customer.id})}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-danger" onClick="return confirm('Do you want to delete the data?')">Delete</button>
+                        </form>
+                    </td>
+
+                    <td>
+                        <a class="btn btn-success" th:href="@{/edit/{id}(id=${customer.id})}">Edit</a>
+                    </td>
+
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var dateInput = document.getElementById('transactionDate');
+        var today = new Date();
+        var year = today.getFullYear();
+        var month = String(today.getMonth() + 1).padStart(2, '0');
+        var day = String(today.getDate()).padStart(2, '0');
+        var todayString = year + '-' + month + '-' + day;
+        dateInput.value = todayString;
+    });
+</script>
+
+</body>
+</html>
